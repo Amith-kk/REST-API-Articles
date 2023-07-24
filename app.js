@@ -14,14 +14,42 @@ app.use(express.static("public"));
 mongoose.connect("mongodb://localhost:27017/wikiDB");
 
 const articleSchema = {
-    name: String,
+    title: String,
     content: String
 };
 
 const Article = mongoose.model("Article", articleSchema);
 
-//TODO
+app.get("/articles", function(req, res) {
+    Article.find()
+    .then((foundArticles) => {
+        res.send(foundArticles);
+    })
+    .catch((err) => {
+        Console.error(err);
+    })
+});
+
+app.post("/articles", function(req, res) {
+    console.log();
+    console.log();
+
+    const newArticles = new Article({
+        title: req.body.title,
+        content: req.body.content
+    });
+
+    newArticles.save()
+    .then(() => {
+        res.send("success");
+    })
+    .catch((err) => {
+        res.send(err);
+    });
+
+});
 
 app.listen(3000, function() {
     console.log("Server started on port 3000");
 });
+
