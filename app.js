@@ -41,12 +41,22 @@ app.post("/articles", function(req, res) {
 
     newArticles.save()
     .then(() => {
-        res.send("success");
+        res.send("successfully added a new articles.");
     })
     .catch((err) => {
         res.send(err);
     });
 
+});
+
+app.delete("/articles", function(req, res) {
+    Article.deleteMany()
+    .then(() => {
+        res.send("Successfully deleted all articles");
+    })
+    .catch((err) => {
+        res.send(err);
+    });
 });
 
 app.listen(3000, function() {
