@@ -2,6 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
+const { get } = require("http");
+const { error } = require("console");
 
 const app = express();
 
@@ -20,7 +22,10 @@ const articleSchema = {
 
 const Article = mongoose.model("Article", articleSchema);
 
-app.get("/articles", function(req, res) {
+////////////////Request Targetting All Articles/////
+
+app.route("/articles")
+.get(function(req, res) {
     Article.find()
     .then((foundArticles) => {
         res.send(foundArticles);
@@ -28,11 +33,9 @@ app.get("/articles", function(req, res) {
     .catch((err) => {
         Console.error(err);
     })
-});
+})
 
-app.post("/articles", function(req, res) {
-    console.log();
-    console.log();
+.post(function(req, res) {
 
     const newArticles = new Article({
         title: req.body.title,
@@ -47,9 +50,9 @@ app.post("/articles", function(req, res) {
         res.send(err);
     });
 
-});
+})
 
-app.delete("/articles", function(req, res) {
+.delete(function(req, res) {
     Article.deleteMany()
     .then(() => {
         res.send("Successfully deleted all articles");
@@ -58,6 +61,73 @@ app.delete("/articles", function(req, res) {
         res.send(err);
     });
 });
+
+
+//////////////////Request Targetting A Specific Articles/////
+
+app.route("/articles/:articleTitle")
+  .get(function(req, res) {
+    Article.findOne({ title: req.params.articleTitle })
+      .then((foundArticle) => {
+        if (foundArticle) {
+          res.send(foundArticle);
+        } else {
+          res.send("No articles matching that title was found.");
+        }
+      })
+      .catch((err) => {
+        res.send(err);
+      });
+  })
+
+  .put(function(req, res) {
+    Article.findOneAndUpdate(
+      { title: req.params.articleTitle },
+      { title: req.body.title, content: req.body.content },
+      { new: true } // To return the updated document in the response
+    )
+    .then((updatedArticle) => {
+      if (updatedArticle) {
+        res.send(updatedArticle);
+      } else {
+        res.send("No article matching that title was found.");
+      }
+    })
+    .catch((err) => {
+      res.send(err);
+    });
+  })
+
+  .patch(function(req, res) {
+    Article.findOneAndUpdate(
+        { title: req.params.articleTitle },
+        { $set: req.body},
+        { new: true } // To return the updated document in the response
+      )
+      .then((updatedArticle) => {
+        if (updatedArticle) {
+          res.send(updatedArticle);
+        } else {
+          res.send("No article matching that title was found.");
+        }
+      })
+      .catch((err) => {
+        res.send(err);
+      });
+  })
+
+
+  .delete(function(req, res) {
+    Article.deleteOne({ title: req.params.articleTitle })
+      .then(() => {
+        res.send("Successfully deleted the corresponding article.");
+      })
+      .catch((err) => {
+        res.send(err);
+      });
+  });
+
+
 
 app.listen(3000, function() {
     console.log("Server started on port 3000");
